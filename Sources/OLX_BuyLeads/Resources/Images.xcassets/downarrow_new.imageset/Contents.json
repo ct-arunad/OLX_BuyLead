@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "downarrow.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

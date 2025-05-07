@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24C101" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="Ads" representedClassName="Ads" syncable="YES" codeGenerationType="class">
+        <attribute name="adId" optional="YES" attributeType="String"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="Cities" representedClassName="Cities" syncable="YES" codeGenerationType="class">
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <relationship name="states" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="States" inverseName="cities" inverseEntity="States"/>
+    </entity>
+    <entity name="LeadStatus" representedClassName="LeadStatus" syncable="YES" codeGenerationType="class">
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <relationship name="subleads" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SubLeads" inverseName="leadstatus" inverseEntity="SubLeads"/>
+    </entity>
+    <entity name="Makes" representedClassName="Makes" syncable="YES" codeGenerationType="class">
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <relationship name="models" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Models" inverseName="makes" inverseEntity="Models"/>
+    </entity>
+    <entity name="Models" representedClassName="Models" syncable="YES" codeGenerationType="class">
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <relationship name="makes" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Makes" inverseName="models" inverseEntity="Makes"/>
+        <relationship name="varients" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Variants" inverseName="models" inverseEntity="Variants"/>
+    </entity>
+    <entity name="States" representedClassName="States" syncable="YES" codeGenerationType="class">
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <relationship name="cities" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Cities" inverseName="states" inverseEntity="Cities"/>
+    </entity>
+    <entity name="SubLeads" representedClassName="SubLeads" syncable="YES" codeGenerationType="class">
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <relationship name="leadstatus" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LeadStatus" inverseName="subleads" inverseEntity="LeadStatus"/>
+    </entity>
+    <entity name="Variants" representedClassName="Variants" syncable="YES" codeGenerationType="class">
+        <attribute name="endyear" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO"/>
+        <attribute name="fuel" optional="YES" attributeType="String"/>
+        <attribute name="gf" optional="YES" attributeType="String"/>
+        <attribute name="makeId" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO"/>
+        <attribute name="modelId" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="newvariant" optional="YES" attributeType="String"/>
+        <attribute name="powerSt" optional="YES" attributeType="String"/>
+        <attribute name="startyear" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO"/>
+        <attribute name="variantId" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO"/>
+        <relationship name="models" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Models" inverseName="varients" inverseEntity="Models"/>
+    </entity>
+</model>
