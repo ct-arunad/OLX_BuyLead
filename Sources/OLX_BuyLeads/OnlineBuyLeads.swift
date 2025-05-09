@@ -32,7 +32,7 @@ public class OnlineBuyLeads: UIViewController,TableCellDelegate,collectionCellDe
     private var Buyleads = NSMutableArray()
     private var searchList = NSArray()
 
-    private var data : [Any] = ["All","Hot","Inv Car","Archive","Appointment Fixed"]
+    private var data : [Any] = ["All","Hot","Inv Cars","Archive","Appointment Fixed"]
     private var apidata : [Any] = []
     var status = ""
     var searchtag = ""
@@ -51,10 +51,12 @@ public class OnlineBuyLeads: UIViewController,TableCellDelegate,collectionCellDe
     private let callObserver = CXCallObserver()
 
     @objc func appCameBackFromCall() {
-        let popup = BuyLeadStatus_update()
-        popup.items = self.selectionitems
-        popup.modalPresentationStyle = .fullScreen
-        self.present(popup, animated: true)
+        DispatchQueue.main.async {
+            let popup = BuyLeadStatus_update()
+            popup.items = self.selectionitems
+            popup.modalPresentationStyle = .fullScreen
+            self.present(popup, animated: true)
+        }
     }
     
     public override func viewDidLoad() {
@@ -71,6 +73,9 @@ public class OnlineBuyLeads: UIViewController,TableCellDelegate,collectionCellDe
             frameworkDefaults.synchronize()
         }
         UserDefaults.standard.set("n", forKey: "show_archieve")
+        UserDefaults.standard.set("n", forKey: "show_apptfixed")
+        UserDefaults.standard.set("n", forKey: "hotleads")
+     
         FontLoader.registerFonts()
         self.title = "Online Buy Leads"
         navigationController?.navigationBar.titleTextAttributes = [
@@ -381,8 +386,20 @@ public class OnlineBuyLeads: UIViewController,TableCellDelegate,collectionCellDe
                 print("Error: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     self.loadingView.hide()
-                    self.customAlert(title: "Error", message: error.localizedDescription, confirmTitle: "OK", cancelTitle: "")
-
+                    self.view.showCustomAlert(image:"",
+                        title: "Error",
+                        message: error.localizedDescription,
+                        confirmTitle: "OK", // Optional, defaults to "OK"
+                        cancelTitle: "", // Optional, defaults to "CANCEL"
+                        confirmAction: {
+                            print("Confirmed")
+                            self.navigationController?.popViewController(animated: true)
+                        },
+                        cancelAction: {
+                            print("Cancelled")
+                        }
+                    )
+                   // self.customAlert(title: "Error", message: error.localizedDescription, confirmTitle: "OK", cancelTitle: "")
                 }
             }
         }
@@ -569,37 +586,29 @@ public class OnlineBuyLeads: UIViewController,TableCellDelegate,collectionCellDe
             case .failure(let error):
                 print("Error: \(error.localizedDescription)")
                 DispatchQueue.main.async {
-                    self.loadingView.hide()
-                    self.customAlert(title: "Error", message: error.localizedDescription, confirmTitle: "OK", cancelTitle: "")
+                 //   self.loadingView.hide()
+            //self.customAlert(title: "Error", message: error.localizedDescription, confirmTitle: "OK", cancelTitle: "")
+                        self.loadingView.hide()
+                        self.view.showCustomAlert(image:"",
+                            title: "Error",
+                            message: error.localizedDescription,
+                            confirmTitle: "OK", // Optional, defaults to "OK"
+                            cancelTitle: "", // Optional, defaults to "CANCEL"
+                            confirmAction: {
+                                print("Confirmed")
+                                self.navigationController?.popViewController(animated: true)
+                            },
+                            cancelAction: {
+                                print("Cancelled")
+                            }
+                        )
+                       // self.customAlert(title: "Error", message: error.localizedDescription, confirmTitle: "OK", cancelTitle: "")
                 }
             }
         }
     }
  
-    func refreshToken()
-    {
-        let headers = ["x-origin-Panamera":"dev","Api-Version":"134","client-language":"en-in","Authorization":"Bearer \(MyPodManager.refresh_token)"] as! [String:String]
-        let parameters = ["user_id":MyPodManager.user_id] as! [String:Any]
-        let api = ApiServices()
-        api.sendRawDataWithHeaders(parameters: parameters, headers: headers,url: "https://fcgapi.olx.in/dealer/v1/auth/refresh_token") { result in
-            switch result {
-            case .success(let data):
-                print("Response Data: \(data)")
-                DispatchQueue.main.async {
-                    MyPodManager.requestDataFromHost(accesstoken: data["access_token"] as! String, userid: data["user_id"] as! String, refreshtoken: data["refresh_token"] as! String)
-                    self.synchHomeAPI()
-                }
-            case .failure(let error):
-                print("Error: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    self.loadingView.hide()
-                    self.customAlert(title: "Error", message: error.localizedDescription, confirmTitle: "OK", cancelTitle: "")
-                }
-            }
-        }
-    }
- 
- 
+  
     @objc func retryNetworkRequest() {
           print("Retry button tapped! Retry network request here.")
            self.navigationController?.popViewController(animated: true)
@@ -797,8 +806,7 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
         return 2
     }
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if(issearchenable){
-            if(tableView == searchtableView){
+        if(tableView == searchtableView){
                 let cell = tableView.dequeueReusableCell(withIdentifier: "VehicleinfoCell", for: indexPath) as! VehicleinfoCell
                 let dic = searchList[indexPath.row] as! NSDictionary
                 cell.label.text = (dic["value"] as! String)
@@ -812,7 +820,6 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
                 cell.deleteBtn.isHidden = false
                 cell.selectionStyle = .none
                 return cell
-            }
         }
         if(indexPath.section == 1){
             let cell = tableView.dequeueReusableCell(withIdentifier: "CustomCell", for: indexPath) as! OnlineBuyLeads_cell
@@ -1040,7 +1047,6 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
     @objc func deleteBuyLead(sender : UIButton)
     {
         let response =  Buyleads[sender.tag] as! [String : Any]
-
         self.view.showCustomAlert(image: "delete_alert",
             title: "Delete Lead",
             message: "Do you want to delete this Lead?",
@@ -1054,8 +1060,6 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
                 print("Cancelled")
             }
         )
-        
-       
     }
     
     func deleteDealer(dealer_id : String,tag : Int)
@@ -1077,7 +1081,7 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
                         if  let dic = data["data"] as? NSDictionary{
                             if(data["status"] as! String == "success"){
                                 if  let dic = data["data"] as? NSDictionary{
-                                    self.customAlert(title: "Success", message: dic["data"]! as! String, confirmTitle: "OK", cancelTitle: "")
+                                    self.customAlert(title: "Success", message: dic["message"]! as! String, confirmTitle: "OK", cancelTitle: "")
                                     self.Buyleads.removeObject(at: tag)
                                     self.tableView.reloadData()
                                 }
@@ -1087,22 +1091,7 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
                             }
                         }
                         else{
-                            print(data)
                             let dic = data
-                            if(dic["error"] as! String == "INVALID_TOKEN")
-                            {
-                                //self.refreshToken()
-                            }
-                            else{
-                                if(data["status"] as! String == "success"){
-                                    if  let dic = data["data"] as? NSDictionary{
-                                        self.customAlert(title: "Success", message: dic["data"]! as! String, confirmTitle: "OK", cancelTitle: "")
-                                    }
-                                }
-                                else{
-                                    self.customAlert(title: "Failed", message: data["error"] as! String, confirmTitle: "OK", cancelTitle: "")
-                                }
-                            }
                             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                                 self.loadingView.hide()
                             }
@@ -1120,6 +1109,7 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
     }
     func deleteDealerCar(carid : String,buyLead_id:String,tag : Int)
     {
+        self.loadingView.show(in: self.view, withText: "")
         let headers = ["x-origin-Panamera":"dev","Api-Version":"155","Client-Platform":"web","Client-Language":"en-in","Authorization":"Bearer \(MyPodManager.access_token)","Http-User-agent":"postman"] as! [String:String]
             let parameters = [
                 "action":"archivebuyleadcar",
@@ -1135,10 +1125,9 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
                 case .success(let data):
                     print("Response Data: \(data)")
                     DispatchQueue.main.async {
+                        self.loadingView.hide()
                         if  let dic = data["data"] as? NSDictionary{
                             if(data["status"] as! String == "success"){
-                                
-                                
                                 self.view.showCustomAlert(image: "",
                                     title: "Success",
                                     message: data["details"] as! String,
@@ -1147,7 +1136,6 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
                                     confirmAction: {
                                         print("Deleted")
                                        self.fetchBuyLeads()
-
                                     },
                                     cancelAction: {
                                         print("Cancelled")
@@ -1197,17 +1185,12 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
         else{
             let response = self.Buyleads[sender.view!.tag] as! NSDictionary
             self.selectionBuyLead = self.Buyleads[sender.view!.tag] as! [String:Any]
-            UserDefaults.standard.set(response["buylead_id"]!, forKey: "buylead_id")
-            self.selectionitems = self.selectionBuyLead as NSDictionary
-            self.appCameBackFromCall()
+//            UserDefaults.standard.set(response["buylead_id"]!, forKey: "buylead_id")
+//            self.selectionitems = self.selectionBuyLead as NSDictionary
+//            self.appCameBackFromCall()
+            self.phoneClicked(dic: self.selectionBuyLead as NSDictionary)
 
-            if let phoneURL = URL(string: "tel://\(response["mobile"]! as! String)"),
-               UIApplication.shared.canOpenURL(phoneURL) {
-                UIApplication.shared.open(phoneURL)
-            } else {
-                print("📵 Calling not supported on this device")
-            }
-            
+          
 //                let actionSheet = UIAlertController(title: "Call \(response["mobile"]! as! String)?", message: nil, preferredStyle: .actionSheet)
 //                let callAction = UIAlertAction(title: "Call", style: .default) { _ in
 //                    self.phoneClicked(dic: response)
@@ -1232,7 +1215,6 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
             self.phoneCallEnded(dic: self.selectionBuyLead as NSDictionary)
               } else if call.isOutgoing && !call.hasConnected {
                   print("Dialing an outgoing call")
-                      self.phoneClicked(dic: self.selectionBuyLead as NSDictionary)
               } else if call.isOutgoing && call.hasConnected {
                   print("Outgoing call connected")
               } else if !call.isOutgoing && !call.hasConnected && !call.hasEnded {
@@ -1276,7 +1258,12 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
                         if  let dic = data["data"] as? NSDictionary{
                             self.buylead_click_id = "\(dic["buylead_click_id"] as! CVarArg)"
                             if(data["status"] as! String == "success"){
-                                
+                                if let phoneURL = URL(string: "tel://\(response["mobile"]! as! String)"),
+                                   UIApplication.shared.canOpenURL(phoneURL) {
+                                    UIApplication.shared.open(phoneURL)
+                                } else {
+                                    print("📵 Calling not supported on this device")
+                                }
                             }
                             else{
                             }
@@ -1304,7 +1291,7 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
     func phoneCallEnded(dic : NSDictionary)
     {
             let response = dic
-        UserDefaults.standard.set(response["buylead_id"]!, forKey: "buylead_id")
+       // UserDefaults.standard.set(response["buylead_id"]!, forKey: "buylead_id")
         selectionitems = response as! [String : Any] as NSDictionary
             self.noleadView.isHidden = true
             let headers = ["x-origin-Panamera":"dev","Api-Version":"155","Client-Platform":"web","Client-Language":"en-in","Authorization":"Bearer \(MyPodManager.access_token)","Http-User-agent":"postman"] as! [String:String]
@@ -1341,10 +1328,10 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
                     }
                 case .failure(let error):
                     print("Error: \(error.localizedDescription)")
+                    self.appCameBackFromCall()
                     DispatchQueue.main.async {
                         self.loadingView.hide()
-                        self.customAlert(title: "Error", message: error.localizedDescription, confirmTitle: "OK", cancelTitle: "")
-
+                       // self.customAlert(title: "Error", message: error.localizedDescription, confirmTitle: "OK", cancelTitle: "")
                     }
                 }
             }
@@ -1389,20 +1376,24 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
     }
     //delete car
     func deleteCar(item: [String : Any], tag: Int) {
+        
         let response =  Buyleads[tag] as! [String : Any]
-        self.view.showCustomAlert(image: "delete_alert",
-            title: "Remove Car",
-            message: "Do you want to remove this \(response["make"] ?? "")?",
-            confirmTitle: "DELETE", // Optional, defaults to "OK"
-            cancelTitle: "CANCEL", // Optional, defaults to "CANCEL"
-            confirmAction: {
+        let cars = response["cars"] as! NSArray
+        if(cars.count > 1){
+            self.view.showCustomAlert(image: "delete_alert",
+                                      title: "Remove Car",
+                                      message: "Do you want to remove this \(item["make"] ?? "") \(item["model"] ?? "")\(item["year"] ?? "")?",
+                                      confirmTitle: "DELETE", // Optional, defaults to "OK"
+                                      cancelTitle: "CANCEL", // Optional, defaults to "CANCEL"
+                                      confirmAction: {
                 print("Deleted")
-            self.deleteDealerCar(carid: item["id"] as! String,buyLead_id:  response["buylead_id"] as! String,tag : tag)
+                self.deleteDealerCar(carid: item["id"] as! String,buyLead_id:  response["buylead_id"] as! String,tag : tag)
             },
             cancelAction: {
                 print("Cancelled")
             }
-        )
+            )
+        }
     }
     
     @objc func navigateToHostVC(sender : UITapGestureRecognizer) {
@@ -1417,7 +1408,6 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
         let response = Buyleads[sender.view!.tag] as! NSDictionary
         if((response["customer_visited"]! as! String).count != 0){
           //  self.showPopup(title: "Message!", message: "Customer Visited On: \n \(response["customer_visited"]! as! String)")
-            
             self.customAlert(title: "Customer Visited On", message: "\(response["customer_visited"]! as! String)", confirmTitle: "OK", cancelTitle: "")
         }
     }

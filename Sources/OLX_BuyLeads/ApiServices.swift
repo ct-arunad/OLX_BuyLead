@@ -96,7 +96,7 @@ public class ApiServices {
                                completion(.success(json!))
                                 
                               } catch {
-                                  completion(.failure(.other(error)))
+                                  completion(.failure(.requestFailed(statusCode: httpResponse.statusCode)))
                               }
                        }
                    }

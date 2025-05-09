@@ -77,8 +77,8 @@ class OnlineBuyLeads_cell : UITableViewCell,UICollectionViewDelegate,UICollectio
             nameLabel.font = .appFont(.medium, size: 15)
             nameLabel.textColor =  UIColor.black
             nameLabel.numberOfLines = 0
-            nameLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-            
+           // nameLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+      
             status_category.setTitle("", for: .normal)
             status_category.translatesAutoresizingMaskIntoConstraints = false
             status_category.setTitleColor(.white, for: .normal)
@@ -109,7 +109,8 @@ class OnlineBuyLeads_cell : UITableViewCell,UICollectionViewDelegate,UICollectio
             statusLabel.font = .appFont(.regular, size: 14)
             statusLabel.textColor =   UIColor.black
             statusLabel.numberOfLines = 1
-            
+        statusLabel.setContentHuggingPriority(.defaultLow, for: .horizontal) // Allow label to grow
+        statusLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
             // Date Label
             dateLabel.font = .appFont(.regular, size: 14)
             dateLabel.numberOfLines = 0
@@ -122,14 +123,18 @@ class OnlineBuyLeads_cell : UITableViewCell,UICollectionViewDelegate,UICollectio
             visitedLabel.textAlignment = .right
             visitedLabel.adjustsFontSizeToFitWidth = true
             visitedLabel.minimumScaleFactor = 0.8
+        visitedLabel.sizeToFit()
+        visitedLabel.setContentHuggingPriority(.defaultLow, for: .horizontal) // Allow label to grow
+        visitedLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
          //   restoreBtn = createButton(title: "restore", color: UIColor.OLXBlueColor)
-        restoreBtn.setImage(UIImage(named: "restore", in: .module, compatibleWith: nil), for: .normal)
+            restoreBtn.setImage(UIImage(named: "restore", in: .module, compatibleWith: nil), for: .normal)
             restoreBtn.setTitle("Restore", for: .normal)
             restoreBtn.setTitleColor(.appPrimary, for: .normal)
             restoreBtn.titleLabel?.font = .appFont(.regular, size: 8)
             restoreBtn.contentHorizontalAlignment = .center
             restoreBtn.contentVerticalAlignment = .center
-
+            restoreBtn.setContentHuggingPriority(.defaultLow, for: .horizontal) // Allow label to grow
+            restoreBtn.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
             // Adjust spacing
             let spacing: CGFloat = 2
 
@@ -151,16 +156,19 @@ class OnlineBuyLeads_cell : UITableViewCell,UICollectionViewDelegate,UICollectio
                 right: -titleSize.width
             )
             let spacer = UIView()
-            spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-            spacer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-            
+//            spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+//            spacer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+             
+        
             let visibleStackView = UIStackView(arrangedSubviews: [statusLabel,spacer,visitedLabel,restoreBtn])
             visibleStackView.axis = .horizontal
             visibleStackView.alignment = .center
-            visibleStackView.distribution = .fillProportionally
+            visibleStackView.distribution = .fill
             visibleStackView.spacing = 8
             visibleStackView.translatesAutoresizingMaskIntoConstraints = false
-         
+//            visibleStackView.isLayoutMarginsRelativeArrangement = true
+//            visibleStackView.layoutMargins = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5)
+        
             // Separator
             separatorView.translatesAutoresizingMaskIntoConstraints = false
             separatorView.backgroundColor = .lightGray
@@ -222,11 +230,7 @@ class OnlineBuyLeads_cell : UITableViewCell,UICollectionViewDelegate,UICollectio
             bottomView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
             bottomView.layer.masksToBounds = true
             bottomView.backgroundColor =   UIColor(red: 216/255, green: 219/255, blue: 224/255, alpha: 1.0)
-            
             bottomView.isUserInteractionEnabled = true
-            
-            
-
        
             
             NSLayoutConstraint.activate([
@@ -236,11 +240,7 @@ class OnlineBuyLeads_cell : UITableViewCell,UICollectionViewDelegate,UICollectio
                 bottomstackView.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor),
                 bottomstackView.heightAnchor.constraint(equalToConstant: 50),
             ])
-            
-          
-            
-            
-            
+                        
             let stackView = UIStackView(arrangedSubviews: [titleStackView, visibleStackView, separatorView, dateLabel, collectionView])
             stackView.axis = .vertical
             stackView.spacing = 8

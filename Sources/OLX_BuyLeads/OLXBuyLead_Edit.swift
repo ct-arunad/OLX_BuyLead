@@ -181,8 +181,29 @@ class OLXBuyLead_Edit: UIViewController {
         loadbuylead()
         setupUI(topviewheight: 80)
 
-    }
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(keyboardWillShow(_:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil)
+
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(keyboardWillHide(_:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil)
+       }
     
+    @objc func keyboardWillShow(_ notification: Notification) {
+        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+
+        let keyboardHeight = keyboardFrame.height
+
+        tableView.contentInset.bottom = keyboardHeight
+        tableView.scrollIndicatorInsets.bottom = keyboardHeight
+    }
+    @objc func keyboardWillHide(_ notification: Notification) {
+        tableView.contentInset.bottom = 0
+        tableView.scrollIndicatorInsets.bottom = 0
+    }
     // MARK: - Private Methods
     private func setupUI(topviewheight : CGFloat) {
         view.backgroundColor = .white
@@ -415,6 +436,7 @@ class OLXBuyLead_Edit: UIViewController {
                        item["text"] = buyLeadData["status_category"] as? String ?? ""
                    case "status":
                        item["text"] = buyLeadData["status"] as? String ?? ""
+                       self.subleads = (self.getsubleadstatus(leadState:buyLeadData["status"] as? String ?? ""))
                    case "substatus":
                        item["text"] = buyLeadData["substatus"] as? String ?? ""
                    case "status_date":
@@ -595,6 +617,7 @@ class OLXBuyLead_Edit: UIViewController {
     }
     @objc private func saveButtonTapped() {
         // Print all data
+        var visitedDate = ""
         var message = ""
         var parameters = [
             "action":"updatebuylead",
@@ -668,15 +691,15 @@ class OLXBuyLead_Edit: UIViewController {
                                     message = message.count == 0 ? "Lead Status" :"\(message)-Lead Status"
                                 }
                                 parameters["status"] = text
-
                             }
                             if(key == "substatus"){
                                 if(text.count == 0)
                                 {
-                                    message =  message.count == 0 ? "Lead SubStatus":"\(message)-Lead SubStatus"
+                                    if(self.subleads.count != 0){
+                                        message =  message.count == 0 ? "Lead SubStatus":"\(message)-Lead SubStatus"
+                                    }
                                 }
                                 parameters["substatus"] = text
-
                             }
                             if(key == "status_date"){
                                 if(text.count == 0)
@@ -684,16 +707,25 @@ class OLXBuyLead_Edit: UIViewController {
                                     message = message.count == 0 ?"Status Date" :"\(message)-Status Date"
                                 }
                                 parameters["status_date"] = text
-
                             }
                             if(key == "Customer Visited"){
-                                if(text == "yes")
-                                {
-                                message =  message.count == 0 ? "Customer Visited Date" :"\(message)-Customer Visited Date"
-                                }
+                               visitedDate = text
+//                                if(text == "yes")
+//                                {
+//                                message =  message.count == 0 ? "Customer Visited Date" :"\(message)-Customer Visited Date"
+//                                }
                             }
                             if(key == "customer_visited"){
-                                parameters["customer_visited"] = item["isOpen"] as! Bool ? "" : text
+                                if(visitedDate == "no"){
+                                    
+                                }
+                                else{
+                                    parameters["customer_visited"] = item["isOpen"] as! Bool ? "" : text
+                                    if(text.count == 0){
+                                    message =  message.count == 0 ? "Customer Visited Date" :"\(message)-Customer Visited Date"
+                                    }
+                                }
+                              
                             }
                             if(key == "statustext"){
                                 if(text.count == 0)
@@ -742,7 +774,7 @@ class OLXBuyLead_Edit: UIViewController {
                                         print("Cancelled")
                                     }
                                 )
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                     if(self.sendsmsStatus){
                                         self.sendSMS()
                                     }
@@ -848,24 +880,27 @@ extension OLXBuyLead_Edit: UITableViewDelegate, UITableViewDataSource {
     }
     @objc func deleteCar(sender : UIButton)
     {
-        let response =  cars[sender.tag] as! [String : Any]
-        self.view.showCustomAlert(image: "delete_alert",
-            title: "Remove Car",
-            message: "Do you want to remove this \(response["make"] ?? "")?",
-            confirmTitle: "DELETE", // Optional, defaults to "OK"
-            cancelTitle: "CANCEL", // Optional, defaults to "CANCEL"
-            confirmAction: {
+        if(cars.count > 1){
+            let response =  cars[sender.tag] as! [String : Any]
+            self.view.showCustomAlert(image: "delete_alert",
+                                      title: "Remove Car",
+                                      message: "Do you want to remove this \((response["make"] as! String)) \((response["model"] as! String)) \((response["year"] as! String))?",
+                                      confirmTitle: "DELETE", // Optional, defaults to "OK"
+                                      cancelTitle: "CANCEL", // Optional, defaults to "CANCEL"
+                                      confirmAction: {
                 print("Deleted")
                 self.deleteDealerCar(carid: response["id"] as! String,buyLead_id:  UserDefaults.standard.value(forKey: "buylead_id")! as! String,tag: sender.tag)
             },
-            cancelAction: {
+                                      cancelAction: {
                 print("Cancelled")
             }
-        )
+            )
+        }
         
     }
     func deleteDealerCar(carid : String,buyLead_id:String,tag : Int)
     {
+        self.loadingView.show(in: self.view, withText: "")
         let headers = ["x-origin-Panamera":"dev","Api-Version":"155","Client-Platform":"web","Client-Language":"en-in","Authorization":"Bearer \(MyPodManager.access_token)","Http-User-agent":"postman"] as! [String:String]
             let parameters = [
                 "action":"archivebuyleadcar",
@@ -883,6 +918,7 @@ extension OLXBuyLead_Edit: UITableViewDelegate, UITableViewDataSource {
                     DispatchQueue.main.async {
                         if  let dic = data["data"] as? NSDictionary{
                             if(data["status"] as! String == "success"){
+                                self.loadingView.hide()
                                 self.view.showCustomAlert(image: "",
                                     title: "Success",
                                     message: data["details"] as! String,
@@ -966,7 +1002,6 @@ extension OLXBuyLead_Edit: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 40
     }
-    
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return 0
     }
@@ -985,6 +1020,9 @@ extension OLXBuyLead_Edit: UITableViewDelegate, UITableViewDataSource {
                 if(item["action"] as? String  == "checkBox"){
                  return 35
                 }
+                return 60
+            }
+            if(indexPath.section == 0){
                 return 60
             }
             return UITableView.automaticDimension
@@ -1087,7 +1125,7 @@ extension OLXBuyLead_Edit: CTEFormTableViewCellDelegate,UITextFieldDelegate {
             default:
                 break
             }
-            showDatePicker(for: indexPath,keyvalue: "customer_visited")
+            showDatePicker(for: indexPath,keyvalue: key)
         }
     }
     
@@ -1122,6 +1160,8 @@ extension OLXBuyLead_Edit: CTEFormTableViewCellDelegate,UITextFieldDelegate {
         else{
             self.sections[indexPath.section][indexPath.row]["text"] =  button.isSelected ? "yes" : "no"
             self.sections[indexPath.section][indexPath.row+1]["isOpen"] =  button.isSelected ? false : true
+        //    self.sections[indexPath.section][indexPath.row+1]["text"] =  ""
+
             self.treeModel?.updateSections(self.sections ?? [])
             let indexPaths = [
                 IndexPath(row: indexPath.row, section: indexPath.section),
@@ -1184,12 +1224,8 @@ extension OLXBuyLead_Edit: CTEFormTableViewCellDelegate,UITextFieldDelegate {
             sections[indexPath.section][indexPath.row]["text"] = textField.text ?? ""
             self.treeModel?.updateSections(self.sections ?? [])
         }
-        textField.delegate = self
     }
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return true
-    }
+  
     private func showOptionsAlert(options: [String], for indexPath: IndexPath,header:String) {
         self.bgView.isHidden = false
         self.view.resignFirstResponder()

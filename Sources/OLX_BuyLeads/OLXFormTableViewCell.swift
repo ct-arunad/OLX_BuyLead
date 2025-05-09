@@ -11,7 +11,7 @@ protocol CTEFormTableViewCellDelegate: AnyObject {
     func didUpdateTextField(_ textField: UITextField)
     func selectedCheckBox(_ button: UIButton)
 }
-class OLXFormTableViewCell: UITableViewCell {
+class OLXFormTableViewCell: UITableViewCell,UITextFieldDelegate {
 
     // MARK: - Properties
     weak var delegate: CTEFormTableViewCellDelegate?
@@ -46,6 +46,12 @@ class OLXFormTableViewCell: UITableViewCell {
         field.font = .appFont(.regular, size: 14)
         field.borderStyle = .none
         field.clearButtonMode = .whileEditing
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let done = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(doneButtonTapped))
+        toolbar.items = [flexSpace, done]
+        field.inputAccessoryView = toolbar
         return field
     }()
     
@@ -107,7 +113,9 @@ class OLXFormTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
     }
-    
+    @objc func doneButtonTapped() {
+        textField.resignFirstResponder()
+       }
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -265,9 +273,12 @@ class OLXFormTableViewCell: UITableViewCell {
         } else {
             textField.keyboardType = .default
         }
-        
+        textField.delegate = self
     }
-    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
     private func configureButton(_ item: [String: Any]) {
         textField.isHidden = true
         selectionButton.isHidden = false

@@ -47,18 +47,17 @@ public class LoadingView: UIView {
 
         NSLayoutConstraint.activate([
             activityIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
-            activityIndicator.topAnchor.constraint(equalTo: topAnchor, constant: 15),
+            activityIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
 
-            loadingLabel.topAnchor.constraint(equalTo: activityIndicator.bottomAnchor, constant: 10),
+            loadingLabel.topAnchor.constraint(equalTo: activityIndicator.bottomAnchor),
             loadingLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            loadingLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -15)
         ])
     }
 
     public func show(in view: UIView, withText text: String) {
         loadingLabel.text = text
-        frame = CGRect(x: 0, y: 0, width: 150, height: 100)
-        center = view.center
+        frame = view.frame
+       // center = view.center
         view.addSubview(self)
         activityIndicator.startAnimating()
     }

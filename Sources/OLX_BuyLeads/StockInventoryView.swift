@@ -68,14 +68,13 @@ public class StockInventoryView : UIViewController, UITableViewDataSource, UITab
         imageview.layer.cornerRadius = imageview.frame.size.width / 2
         imageview.backgroundColor = .sendsms
         imageview.layer.masksToBounds = true
-        imageview.image = UIImage(named: "filter", in: .framework, compatibleWith: nil)
+        imageview.image = UIImage.named("filter")
         headerView.addSubview(imageview)
         let titleLabel = UILabel(frame: CGRect(x: 50, y: 10, width: tableView.frame.width, height: 30))
         titleLabel.text = "Inventory Cars"
         titleLabel.textColor = UIColor.OLXBlueColor
         titleLabel.font = .appFont(.medium, size: 14)
         headerView.addSubview(titleLabel)
-        
         
         let button = UIButton(type: .custom)
         button.frame = CGRect(x: tableView.frame.width - 50, y: 10, width: 25, height: 25)

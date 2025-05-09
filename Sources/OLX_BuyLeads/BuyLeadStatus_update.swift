@@ -67,7 +67,7 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
         self.bgView.isHidden = true
     }
     func setupViews() {
-      view.backgroundColor = UIColor.white.withAlphaComponent(0.5)
+        view.backgroundColor = UIColor.white.withAlphaComponent(0.5)
         popupView.backgroundColor = .white
         popupView.layer.cornerRadius = 12
         popupView.translatesAutoresizingMaskIntoConstraints = false
@@ -151,7 +151,31 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
            ])
            self.setupLabels()
            self.layoutLabels()
+        
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(keyboardWillShow(_:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil)
+
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(keyboardWillHide(_:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil)
        }
+    
+    @objc func keyboardWillShow(_ notification: Notification) {
+        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+
+        let keyboardHeight = keyboardFrame.height
+
+        tableView.contentInset.bottom = keyboardHeight
+        tableView.scrollIndicatorInsets.bottom = keyboardHeight
+    }
+
+    @objc func keyboardWillHide(_ notification: Notification) {
+        tableView.contentInset.bottom = 0
+        tableView.scrollIndicatorInsets.bottom = 0
+    }
     @objc func closeTopView() {
         self.dismiss(animated: false)
     }
@@ -267,11 +291,11 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
         let parameters = [
             "action":"loadbuylead",
             "dealer_id":MyPodManager.user_id,
-            "buylead_id":items["buylead_id"]! as! String,
-                "api_id":"cteolx2024v1.0",
+            "buylead_id":UserDefaults.standard.value(forKey: "buylead_id") ?? "",
+            "api_id":"cteolx2024v1.0",
             "device_id":Constant.uuid!,
         ] as! [String:Any]
-        
+        print(parameters)
         
         let api = ApiServices()
         api.sendRawDataWithHeaders(parameters: parameters, headers: headers,url: Constant.OLXApi) { result in
@@ -291,12 +315,14 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
                         }
                     }
                     else{
-                        OnlineBuyLeads().refreshToken()
+                      //  OnlineBuyLeads().refreshToken()
                     }
                 }
             case .failure(let error):
                 print("Error: \(error.localizedDescription)")
-              
+                DispatchQueue.main.async {
+                    self.customAlert(title: "Error", message: error.localizedDescription, confirmTitle: "OK", cancelTitle: "")
+                }
             }
         }
     }
@@ -322,6 +348,7 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
                     item["text"] = buyLeadData["status_category"] as? String ?? ""
                 case "status":
                     item["text"] = buyLeadData["status"] as? String ?? ""
+                    self.subleads = (self.getsubleadstatus(leadState:buyLeadData["status"] as? String ?? ""))
                 case "substatus":
                     item["text"] = buyLeadData["substatus"] as? String ?? ""
                 case "status_date":
@@ -376,9 +403,10 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
         
         // Update the itemsArray for the table view
         itemsArray = sections.flatMap { $0 }
-        
-        // Reload the table view
-        self.tableView.reloadData()
+        DispatchQueue.main.async {
+            // Reload the table view
+            self.tableView.reloadData()
+        }
     }
     
     // MARK: - TableView DataSource
@@ -418,6 +446,7 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
     }
    @objc func updatebuylead()
     {
+        var visitedDate = ""
         var message = ""
         var parameters = [
                 "status_date": "",
@@ -459,7 +488,9 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
                             if(key == "substatus"){
                                 if(text.count == 0)
                                 {
-                                    message =  message.count == 0 ? "Lead SubStatus":"\(message)-Lead SubStatus"
+                                    if(self.subleads.count != 0){
+                                        message =  message.count == 0 ? "Lead SubStatus":"\(message)-Lead SubStatus"
+                                    }
                                 }
                                 parameters["substatus"] = text
 
@@ -473,13 +504,18 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
 
                             }
                             if(key == "Customer Visited"){
-                                if(text == "yes")
-                                {
-                                message =  message.count == 0 ? "Customer Visited Date" :"\(message)-Customer Visited Date"
-                                }
+                                visitedDate = text
                             }
                             if(key == "customer_visited"){
-                                parameters["customer_visited"] = item["isOpen"] as! Bool ? "" : text
+                                if(visitedDate == "no"){
+                                    
+                                }
+                                else{
+                                    parameters["customer_visited"] = item["isOpen"] as! Bool ? "" : text
+                                    if(text.count == 0){
+                                    message =  message.count == 0 ? "Customer Visited Date" :"\(message)-Customer Visited Date"
+                                    }
+                                }
                             }
                             if(key == "statustext"){
                                 if(text.count == 0)
@@ -509,26 +545,26 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
                     print("Response Data: \(data)")
                     if(data["status"] as! String == "success"){
                         DispatchQueue.main.async {
-                            self.view.showCustomAlert(image:"",
-                                title: "Update Successful",
-                                message: "BuyLead has been updated successfully",
-                                confirmTitle: "OK", // Optional, defaults to "OK"
-                                cancelTitle: "", // Optional, defaults to "CANCEL"
-                                confirmAction: {
-                                    // Handle confirm action
-                                    print("Confirmed")
-                                    self.dismiss(animated: true)
-                                    NotificationCenter.default.post(name:Notification.Name("refreshLeads"), object: nil)
-                                },
-                                cancelAction: {
-                                    // Handle cancel action
-                                    print("Cancelled")
-                                }
-                            )
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                if(self.sendsmsstatus){
-                                    self.sendSMS()
-                                }
+                         if(self.sendsmsstatus){
+                                self.sendSMS()
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                self.view.showCustomAlert(image:"",
+                                    title: "Update Successful",
+                                    message: "BuyLead has been updated successfully",
+                                    confirmTitle: "OK", // Optional, defaults to "OK"
+                                    cancelTitle: "", // Optional, defaults to "CANCEL"
+                                    confirmAction: {
+                                        // Handle confirm action
+                                        print("Confirmed")
+                                        self.dismiss(animated: true)
+                                        NotificationCenter.default.post(name:Notification.Name("refreshLeads"), object: nil)
+                                    },
+                                    cancelAction: {
+                                        // Handle cancel action
+                                        print("Cancelled")
+                                    }
+                                )
                              }
                         }
                     }

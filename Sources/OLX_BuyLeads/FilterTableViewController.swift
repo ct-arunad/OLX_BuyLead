@@ -32,9 +32,10 @@ public class FilterTableViewController : UIViewController, UITableViewDataSource
     
     public func configure(with items: [Any]) {
         self.items = items
-        self.topSectionData = Array(items.prefix(self.items.count-2))
-        self.bottomSectionData = Array(items.suffix(2))
-
+        if(items.count != 0){
+            self.topSectionData = Array(items.prefix(self.items.count-2))
+            self.bottomSectionData = Array(items.suffix(2))
+        }
     }
     private func setupTableView() {
         
@@ -88,7 +89,7 @@ public class FilterTableViewController : UIViewController, UITableViewDataSource
             let imageview = UIImageView(frame: CGRect(x: 16, y: 0, width: 30, height: 30))
             imageview.layer.cornerRadius = imageview.frame.size.width / 2
             imageview.layer.masksToBounds = true
-            imageview.image = UIImage(named: "filter", in: .framework, compatibleWith: nil)
+            imageview.image = UIImage.named("filter")
             headerView.addSubview(imageview)
             let titleLabel = UILabel(frame: CGRect(x: 50, y: 0, width: tableView.frame.width, height: 30))
             titleLabel.text = "Filter"
@@ -101,7 +102,7 @@ public class FilterTableViewController : UIViewController, UITableViewDataSource
             let titleLabel = UILabel(frame: CGRect(x: 10, y: 10, width: tableView.frame.width, height: 30))
             titleLabel.text = "Converted and Closed counts are not counted"
             titleLabel.textColor = UIColor.OLXBlueColor
-            titleLabel.font = .appFont(.medium, size: 16)
+            titleLabel.font = .appFont(.medium, size: 14)
             headerView.addSubview(titleLabel)
         }
         return headerView
