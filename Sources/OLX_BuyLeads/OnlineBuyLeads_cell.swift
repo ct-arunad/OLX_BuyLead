@@ -108,7 +108,10 @@ class OnlineBuyLeads_cell : UITableViewCell,UICollectionViewDelegate,UICollectio
             // Status Label
             statusLabel.font = .appFont(.regular, size: 14)
             statusLabel.textColor =   UIColor.black
-            statusLabel.numberOfLines = 1
+           // statusLabel.numberOfLines = 1
+        statusLabel.numberOfLines = 0
+        statusLabel.lineBreakMode = .byWordWrapping
+        statusLabel.sizeToFit()
         statusLabel.setContentHuggingPriority(.defaultLow, for: .horizontal) // Allow label to grow
         statusLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
             // Date Label
@@ -164,10 +167,10 @@ class OnlineBuyLeads_cell : UITableViewCell,UICollectionViewDelegate,UICollectio
             visibleStackView.axis = .horizontal
             visibleStackView.alignment = .center
             visibleStackView.distribution = .fill
-            visibleStackView.spacing = 8
+            visibleStackView.spacing = 4
             visibleStackView.translatesAutoresizingMaskIntoConstraints = false
-//            visibleStackView.isLayoutMarginsRelativeArrangement = true
-//            visibleStackView.layoutMargins = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5)
+           visibleStackView.isLayoutMarginsRelativeArrangement = true
+            visibleStackView.layoutMargins = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5)
         
             // Separator
             separatorView.translatesAutoresizingMaskIntoConstraints = false

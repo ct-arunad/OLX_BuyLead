@@ -48,7 +48,8 @@ public class OnlineBuyLeads: UIViewController,TableCellDelegate,collectionCellDe
     var issearchenable = false
     let loadingView = LoadingView()
     var filterParams = [String:Any]()
-    private let callObserver = CXCallObserver()
+    var callObserver: CXCallObserver?
+    private let callQueue = DispatchQueue(label: "my.ios10.call.status.queue")
 
     @objc func appCameBackFromCall() {
         DispatchQueue.main.async {
@@ -60,13 +61,7 @@ public class OnlineBuyLeads: UIViewController,TableCellDelegate,collectionCellDe
     }
     
     public override func viewDidLoad() {
-        
-     //   IQKeyboardManager.shared.isEnabled = true
-
         super.viewDidLoad()
-        callObserver.setDelegate(self, queue: nil)
-//        NotificationCenter.default.addObserver(self, selector: #selector(appCameBackFromCall), name: UIApplication.didBecomeActiveNotification, object: nil)
-
         NotificationCenter.default.addObserver(self, selector: #selector(fetchBuyLeads), name: Notification.Name("refreshLeads"), object: nil)
         if let frameworkDefaults = UserDefaults(suiteName: "com.Samplepod.OLX-BuyLeads") {
             frameworkDefaults.removePersistentDomain(forName: "com.Samplepod.OLX-BuyLeads")
@@ -1210,19 +1205,21 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
     }
     
     public func callObserver(_ callObserver: CXCallObserver, callChanged call: CXCall) {
-        if call.hasEnded {
-                  print("Call has ended")
-            self.phoneCallEnded(dic: self.selectionBuyLead as NSDictionary)
-              } else if call.isOutgoing && !call.hasConnected {
-                  print("Dialing an outgoing call")
-              } else if call.isOutgoing && call.hasConnected {
-                  print("Outgoing call connected")
-              } else if !call.isOutgoing && !call.hasConnected && !call.hasEnded {
-                  print("Incoming call ringing")
-              } else if !call.isOutgoing && call.hasConnected {
-                  print("Incoming call connected")
-              }
-    }
+           if call.hasEnded {
+               print("📞 Call ended")
+               DispatchQueue.main.async {
+                   self.phoneCallEnded(dic: self.selectionBuyLead as NSDictionary)
+               }
+               // Handle end of call safely here
+           } else if call.isOutgoing && !call.hasConnected {
+               print("📞 Dialing...")
+               self.appCameBackFromCall()
+
+           } else if call.hasConnected && !call.hasEnded {
+               print("📞 Call connected")
+           }
+       }
+   
     func convertDateToString(_ date: NSDate, format: String = "yyyy-MM-dd HH:mm:ss") -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = format
@@ -1264,6 +1261,8 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
                                 } else {
                                     print("📵 Calling not supported on this device")
                                 }
+                                self.callObserver = CXCallObserver()
+                                self.callObserver?.setDelegate(self, queue: self.callQueue)
                             }
                             else{
                             }
@@ -1314,7 +1313,7 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
                     DispatchQueue.main.async {
                         self.loadingView.hide()
                         if  let dic = data["data"] as? NSDictionary{
-                            self.appCameBackFromCall()
+                           // self.appCameBackFromCall()
                         }
                         else{
                             if(data["error"] as! String == "INVALID_TOKEN")
@@ -1328,10 +1327,10 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
                     }
                 case .failure(let error):
                     print("Error: \(error.localizedDescription)")
-                    self.appCameBackFromCall()
+                   // self.appCameBackFromCall()
                     DispatchQueue.main.async {
                         self.loadingView.hide()
-                       // self.customAlert(title: "Error", message: error.localizedDescription, confirmTitle: "OK", cancelTitle: "")
+                      //  self.customAlert(title: "Error", message: error.localizedDescription, confirmTitle: "OK", cancelTitle: "")
                     }
                 }
             }

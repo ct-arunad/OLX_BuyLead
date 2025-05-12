@@ -361,7 +361,9 @@ class OLXBuyLead_Edit: UIViewController {
                         DispatchQueue.main.async {
                             if  let dic = data["data"] as? NSDictionary{
                                 self.buyLeadData = (dic["buylead"] as! NSDictionary) as! [String : Any]
-                                self.cars = (self.buyLeadData["cars"] as! NSArray) as! [Any]
+                                if let cars =  self.buyLeadData["cars"] as? NSArray{
+                                    self.cars = (self.buyLeadData["cars"] as! NSArray) as! [Any]
+                                }
                                 self.logs = (dic["log"] as! NSArray) as! [Any]
                                 self.updatePlistWithAPIResponse()
                                 self.tableView.reloadData()
