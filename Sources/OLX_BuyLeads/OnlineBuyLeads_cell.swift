@@ -125,8 +125,8 @@ class OnlineBuyLeads_cell : UITableViewCell,UICollectionViewDelegate,UICollectio
             visitedLabel.textColor = .systemGreen
             visitedLabel.textAlignment = .right
             visitedLabel.adjustsFontSizeToFitWidth = true
-            visitedLabel.minimumScaleFactor = 0.8
-        visitedLabel.sizeToFit()
+        visitedLabel.minimumScaleFactor = 0.5
+            visitedLabel.lineBreakMode = .byClipping
         visitedLabel.setContentHuggingPriority(.defaultLow, for: .horizontal) // Allow label to grow
         visitedLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
          //   restoreBtn = createButton(title: "restore", color: UIColor.OLXBlueColor)
@@ -163,10 +163,10 @@ class OnlineBuyLeads_cell : UITableViewCell,UICollectionViewDelegate,UICollectio
 //            spacer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
              
         
-            let visibleStackView = UIStackView(arrangedSubviews: [statusLabel,spacer,visitedLabel,restoreBtn])
+            let visibleStackView = UIStackView(arrangedSubviews: [statusLabel,visitedLabel,restoreBtn])
             visibleStackView.axis = .horizontal
             visibleStackView.alignment = .center
-            visibleStackView.distribution = .fill
+            visibleStackView.distribution = .fillProportionally
             visibleStackView.spacing = 4
             visibleStackView.translatesAutoresizingMaskIntoConstraints = false
            visibleStackView.isLayoutMarginsRelativeArrangement = true

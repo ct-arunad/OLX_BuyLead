@@ -557,7 +557,7 @@ public class OnlineBuyLeads: UIViewController,TableCellDelegate,collectionCellDe
                             self.spage = pagination["next"] as! Int
                             self.apidata = (result["status_count"] as! NSArray) as! [Any]
                             var statusString = (self.data[0] as! String).replacingOccurrences(of: "[^a-zA-Z\\s]", with: "", options: .regularExpression)
-                            statusString = statusString.replacingOccurrences(of: " ", with: "")
+                         //   statusString = statusString.replacingOccurrences(of: " ", with: "")
                             self.data[0] = "\(statusString) (\(self.Buyleads.count))"
                             self.tableView.reloadData()
                            if(self.Buyleads.count == 0){
@@ -1180,27 +1180,7 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
         else{
             let response = self.Buyleads[sender.view!.tag] as! NSDictionary
             self.selectionBuyLead = self.Buyleads[sender.view!.tag] as! [String:Any]
-//            UserDefaults.standard.set(response["buylead_id"]!, forKey: "buylead_id")
-//            self.selectionitems = self.selectionBuyLead as NSDictionary
-//            self.appCameBackFromCall()
             self.phoneClicked(dic: self.selectionBuyLead as NSDictionary)
-
-          
-//                let actionSheet = UIAlertController(title: "Call \(response["mobile"]! as! String)?", message: nil, preferredStyle: .actionSheet)
-//                let callAction = UIAlertAction(title: "Call", style: .default) { _ in
-//                    self.phoneClicked(dic: response)
-//                    if let phoneURL = URL(string: "tel://\(response["mobile"]! as! String)"),
-//                       UIApplication.shared.canOpenURL(phoneURL) {
-//                        UIApplication.shared.open(phoneURL)
-//                    } else {
-//                        print("📵 Calling not supported on this device")
-//                    }
-//                }
-//                let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-//                actionSheet.addAction(callAction)
-//                actionSheet.addAction(cancelAction)
-//                self.present(actionSheet, animated: true, completion: nil)
-          
         }
     }
     
@@ -1297,13 +1277,13 @@ extension OnlineBuyLeads: UITableViewDelegate, UITableViewDataSource {
             let parameters = [
                 "api_id": "cteolx2024v1.0",
                   "app_type": "olx",
-                  "device_id": MyPodManager.user_id,
+                  "device_id": Constant.uuid!,
                 "mobile":response["mobile"],
                 "end_time":convertDateToString(NSDate()),
                   "buylead_id": response["buylead_id"],
                   "action": "submitbuyleadphoneclicksv1",
                 "buylead_click_id":self.buylead_click_id,
-                  "dealer_id": Constant.uuid!
+                  "dealer_id":MyPodManager.user_id
             ] as! [String:Any]
             let api = ApiServices()
             api.sendRawDataWithHeaders(parameters: parameters, headers: headers,url: Constant.OLXApi) { result in

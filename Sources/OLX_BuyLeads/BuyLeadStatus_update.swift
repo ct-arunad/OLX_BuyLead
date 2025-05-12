@@ -28,7 +28,8 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
 
     let popupView = UIView()
     let updateButton = UIButton(type: .system)
-    
+    var CancelButton = UIButton(type: .system)
+
     let bgView = UIView()
 
        // Top Horizontal Labels
@@ -39,7 +40,7 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
         // Bottom Vertical Labels
         let statusLbl = UILabel()
         let bottomLabel2 = UILabel()
-
+    var buttonStack = UIStackView()
     private let tableView = UITableView()
     
 
@@ -94,13 +95,31 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
         tableView.register(OLXFormTableViewCell.self, forCellReuseIdentifier: "FormCell")
         
            // Bottom Button
-        updateButton.setTitle("Update", for: .normal)
+        updateButton.setTitle("UPDATE", for: .normal)
         updateButton.titleLabel?.font = .appFont(.bold, size: 18)
         updateButton.backgroundColor = .appPrimary
         updateButton.setTitleColor(.white, for: .normal)
         updateButton.layer.cornerRadius = 10
         updateButton.addTarget(self, action: #selector(updatebuylead), for: .touchUpInside)
-        self.view.addSubview(updateButton)
+        
+        
+        CancelButton = UIButton(type: .system)
+        CancelButton.setTitle("CANCEL", for: .normal)
+        CancelButton.setTitleColor(.appPrimary, for: .normal)
+        CancelButton.layer.borderColor = UIColor(red: 23.0/255.0, green: 73.0/255.0, blue: 152.0/255.0, alpha: 1.0).cgColor
+        CancelButton.layer.borderWidth = 2
+        CancelButton.layer.cornerRadius = 5
+        CancelButton.translatesAutoresizingMaskIntoConstraints = false
+        CancelButton.addTarget(self, action: #selector(closeTopView), for: .touchUpInside)
+
+        // Create button stack
+        buttonStack = UIStackView(arrangedSubviews: [CancelButton, updateButton])
+        buttonStack.axis = .horizontal
+        buttonStack.spacing = 10
+        buttonStack.distribution = .fillEqually
+        buttonStack.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(buttonStack)
+
         
         bgView.backgroundColor = .clear
         bgView.isHidden = true
@@ -113,7 +132,7 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
             popupView.translatesAutoresizingMaskIntoConstraints = false
            topView.translatesAutoresizingMaskIntoConstraints = false
            tableView.translatesAutoresizingMaskIntoConstraints = false
-           updateButton.translatesAutoresizingMaskIntoConstraints = false
+           buttonStack.translatesAutoresizingMaskIntoConstraints = false
             bgView.translatesAutoresizingMaskIntoConstraints = false
 
            NSLayoutConstraint.activate([
@@ -132,10 +151,10 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
             
 
                // Bottom Button
-               updateButton.bottomAnchor.constraint(equalTo:  self.view.safeAreaLayoutGuide.bottomAnchor, constant: -50),
-               updateButton.leadingAnchor.constraint(equalTo:  self.view.leadingAnchor, constant: 70),
-               updateButton.trailingAnchor.constraint(equalTo:  self.view.trailingAnchor, constant: -70),
-               updateButton.heightAnchor.constraint(equalToConstant: 50),
+               buttonStack.bottomAnchor.constraint(equalTo:  self.view.safeAreaLayoutGuide.bottomAnchor, constant: -50),
+            buttonStack.leadingAnchor.constraint(equalTo:  self.view.leadingAnchor, constant: 25),
+            buttonStack.trailingAnchor.constraint(equalTo:  self.view.trailingAnchor, constant: -25),
+            buttonStack.heightAnchor.constraint(equalToConstant: 50),
 
                // TableView
                tableView.topAnchor.constraint(equalTo: topView.bottomAnchor,constant: 30),
@@ -234,6 +253,9 @@ class BuyLeadStatus_update : UIViewController, UITableViewDelegate, UITableViewD
           topStack.alignment = .center
           topStack.distribution = .fillEqually
           topStack.backgroundColor = .cellbg
+          
+          topStack.isLayoutMarginsRelativeArrangement = true
+          topStack.layoutMargins = UIEdgeInsets(top: 0, left: 15, bottom: 0, right: 15)
 
 //          let bottomStack = UIStackView(arrangedSubviews: [statusLbl, bottomLabel2])
 //          bottomStack.axis = .vertical

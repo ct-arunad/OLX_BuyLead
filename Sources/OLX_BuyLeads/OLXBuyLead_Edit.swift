@@ -325,9 +325,10 @@ class OLXBuyLead_Edit: UIViewController {
             coloredText.addAttribute(.foregroundColor, value: UIColor.systemBlue, range: NSRange(location: name.count+3, length: phonenumber.count))  // "Swift" in red
             contactnumber.attributedText = coloredText
         }
-        if((items["mobile_clicked"]! as! String) != "y"){
+        if((items["mobile_clicked"]! as! String) == "y"){
             let callGesture = UITapGestureRecognizer(target: self, action: #selector(calltoBuyLead))
             contactnumber.addGestureRecognizer(callGesture)
+            contactnumber.isUserInteractionEnabled = true
         }
       }
     @objc func calltoBuyLead(sender : UITapGestureRecognizer){
@@ -338,7 +339,6 @@ class OLXBuyLead_Edit: UIViewController {
           print("📵 Calling not supported on this device")
       }
   }
-    
     
     func loadbuylead()
     {
